@@ -1,0 +1,133 @@
+---
+description: Spring Boot + Java 25 conventions for reservation-backend
+alwaysApply: true
+---
+
+# Spring Boot — reservation-backend
+
+## Project structure
+
+```
+SistemaReservas/
+└── reservation-backend/
+    ├── pom.xml
+    ├── mvnw / mvnw.cmd
+    ├── .mvn/wrapper/
+    ├── src/
+    │   ├── main/
+    │   │   ├── java/co/dev/laurapedraza/reservation/
+    │   │   │   ├── ReservationBackendApplication.java
+    │   │   │   ├── config/          # @Configuration, security, OpenAPI
+    │   │   │   ├── controller/      # @RestController — HTTP layer only
+    │   │   │   ├── dto/             # Java records for request/response
+    │   │   │   ├── entity/          # JPA @Entity classes
+    │   │   │   ├── exception/       # Custom exceptions + @ControllerAdvice
+    │   │   │   ├── mapper/          # Entity ↔ DTO mapping
+    │   │   │   ├── repository/      # Spring Data JPA interfaces
+    │   │   │   └── service/         # Business logic (@Service)
+    │   │   └── resources/
+    │   │       └── application.properties
+    │   └── test/java/co/dev/laurapedraza/reservation/
+    │       ├── ReservationBackendApplicationTests.java
+    │       ├── controller/
+    │       └── service/
+    └── target/                      # Build output — never edit manually
+```
+
+**Stack:** Java 25 · Spring Boot 4.0.6 · Spring Data JPA · PostgreSQL · springdoc-openapi 3.0.2
+
+**Base package:** `co.dev.laurapedraza.reservation`
+
+## Naming conventions
+
+- Class, method, field, enum, and record component names **must be in English**.
+- Use `camelCase` for methods/fields, `PascalCase` for classes/records/enums.
+- REST paths in kebab-case plural nouns: `/api/v1/reservations`.
+- Package names lowercase, no underscores.
+
+```java
+// ✅ GOOD
+public record CreateReservationRequest(LocalDateTime startTime, Long roomId) {}
+public ReservationResponse findById(Long id) {}
+
+// ❌ BAD
+public record CrearReservaRequest(LocalDateTime horaInicio, Long idSala) {}
+public ReservaResponse buscarPorId(Long id) {}
+```
+
+## DTOs — Java records
+
+- All request/response DTOs **must** be `record` types in the `dto` package.
+- Use Bean Validation annotations on record components (`@NotNull`, `@Size`, etc.).
+- Keep DTOs immutable; never expose JPA entities from controllers.
+
+```java
+public record ReservationResponse(
+    Long id,
+    LocalDateTime startTime,
+    LocalDateTime endTime,
+    String status
+) {}
+```
+
+## Javadoc
+
+Every **public** method (controllers, services, repositories with custom queries, mappers, exception handlers) must have up-to-date Javadoc:
+
+```java
+/**
+ * Creates a new reservation after validating availability.
+ *
+ * @param request the reservation data
+ * @return the created reservation
+ * @throws ReservationConflictException if the time slot is already booked
+ */
+public ReservationResponse create(CreateReservationRequest request) { ... }
+```
+
+Include `@param`, `@return`, and `@throws` when applicable. Keep descriptions concise and in English.
+
+## Layer responsibilities
+
+| Layer | Responsibility |
+|-------|----------------|
+| `controller` | HTTP mapping, validation (`@Valid`), status codes — no business logic |
+| `service` | Business rules, transactions (`@Transactional`) |
+| `repository` | Data access via Spring Data JPA |
+| `entity` | JPA mappings only — no DTOs or HTTP concerns |
+| `mapper` | Convert between entity and record DTO |
+| `exception` | Domain exceptions + global `@RestControllerAdvice` handler |
+
+## Spring Boot best practices
+
+- **Constructor injection only** — prefer `final` fields; avoid `@Autowired` on fields.
+- **Thin controllers, fat services** — controllers delegate immediately to services.
+- **DTO boundary** — never return `@Entity` from REST endpoints.
+- **Validation** — `@Valid` on request bodies; validate at the controller layer.
+- **Transactions** — `@Transactional` on service methods, not controllers.
+- **Repositories** — extend `JpaRepository`; use derived query methods or `@Query` with named parameters.
+- **Configuration** — externalize settings in `application.properties`; use `@ConfigurationProperties` for grouped config.
+- **Exceptions** — throw specific domain exceptions; map them to consistent HTTP responses via `@ControllerAdvice`.
+- **Logging** — use SLF4J (`private static final Logger log = LoggerFactory.getLogger(...)`); log at appropriate levels, never log sensitive data.
+- **IDs** — use `Long` for entity identifiers.
+- **Dates** — prefer `java.time` types (`LocalDateTime`, `Instant`); never `java.util.Date`.
+- **OpenAPI** — document endpoints with springdoc annotations (`@Operation`, `@Tag`) on controllers.
+- **Tests** — use `@SpringBootTest` for integration, `@WebMvcTest` for controllers, `@DataJpaTest` for repositories; name tests `methodName_condition_expectedResult`.
+
+## Java 25 idioms
+
+- Use `record` for DTOs and value objects.
+- Prefer `Optional` for single nullable return values in service/repository layers — never in controller signatures or entity fields.
+- Use `var` only when the type is obvious from the right-hand side.
+- Use pattern matching and `switch` expressions where they improve readability.
+- Use text blocks for multi-line strings (SQL, JSON templates).
+- Prefer `List.of()`, `Map.of()`, `Set.of()` for immutable collections.
+- Enable preview features only when explicitly required and documented in `pom.xml`.
+
+## Code style
+
+- Match existing indentation (tabs in current codebase).
+- One public class per file; filename matches class name.
+- Keep methods short and focused; extract private helpers when logic grows.
+- No wildcard imports.
+- Do not add comments that merely restate the code; Javadoc covers public API intent.
