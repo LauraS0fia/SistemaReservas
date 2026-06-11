@@ -1,0 +1,76 @@
+<section class="reservation-form">
+	<header class="reservation-form__header">
+		<h2>Nueva reserva</h2>
+	</header>
+
+	<form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+		<div class="form-grid">
+			<div class="form-field">
+				<label for="nombreCliente">Nombre del cliente</label>
+				<input
+					id="nombreCliente"
+					type="text"
+					formControlName="nombreCliente"
+					autocomplete="name"
+					[class.form-field__control--invalid]="isFieldInvalid('nombreCliente')"
+				/>
+				@if (isFieldInvalid('nombreCliente')) {
+					<p class="form-field__error">El nombre del cliente es obligatorio.</p>
+				}
+			</div>
+
+			<div class="form-field">
+				<label for="fecha">Fecha</label>
+				<input
+					id="fecha"
+					type="date"
+					formControlName="fecha"
+					[class.form-field__control--invalid]="isFieldInvalid('fecha')"
+				/>
+				@if (isFieldInvalid('fecha')) {
+					<p class="form-field__error">La fecha es obligatoria.</p>
+				}
+			</div>
+
+			<div class="form-field">
+				<label for="hora">Hora</label>
+				<input
+					id="hora"
+					type="time"
+					formControlName="hora"
+					[class.form-field__control--invalid]="isFieldInvalid('hora')"
+				/>
+				@if (isFieldInvalid('hora')) {
+					<p class="form-field__error">La hora es obligatoria.</p>
+				}
+			</div>
+
+			<div class="form-field">
+				<label for="servicio">Servicio</label>
+				<select
+					id="servicio"
+					formControlName="servicio"
+					[class.form-field__control--invalid]="isFieldInvalid('servicio')"
+				>
+					<option value="" disabled>Selecciona un servicio</option>
+					@for (service of services; track service) {
+						<option [value]="service">{{ service }}</option>
+					}
+				</select>
+				@if (isFieldInvalid('servicio')) {
+					<p class="form-field__error">El servicio es obligatorio.</p>
+				}
+			</div>
+		</div>
+
+		<div class="reservation-form__actions">
+			<button type="submit" class="btn btn--primary" [disabled]="submitting()">
+				@if (submitting()) {
+					Guardando…
+				} @else {
+					Crear reserva
+				}
+			</button>
+		</div>
+	</form>
+</section>

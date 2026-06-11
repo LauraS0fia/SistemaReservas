@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import {
 	ReservationResponse,
 	ReservationStatus,
@@ -8,7 +9,7 @@ import { ReservationService } from '../../service/reservation.service';
 
 @Component({
 	selector: 'app-reservation-list',
-	imports: [CommonModule],
+	imports: [CommonModule, RouterLink],
 	templateUrl: './reservation-list.component.html',
 	styleUrl: './reservation-list.component.css',
 })

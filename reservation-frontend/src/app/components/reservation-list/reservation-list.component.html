@@ -1,9 +1,12 @@
 <section class="reservation-list">
 	<header class="reservation-list__header">
 		<h1>Reservations</h1>
-		<button type="button" class="btn btn--secondary" (click)="loadReservations()">
-			Refresh
-		</button>
+		<div class="reservation-list__actions">
+			<a routerLink="/reservations/new" class="btn btn--primary">Nueva reserva</a>
+			<button type="button" class="btn btn--secondary" (click)="loadReservations()">
+				Refresh
+			</button>
+		</div>
 	</header>
 
 	@if (error()) {
