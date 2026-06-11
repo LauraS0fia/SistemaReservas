@@ -1,0 +1,74 @@
+<section class="reservation-list">
+	<header class="reservation-list__header">
+		<h1>Reservations</h1>
+		<button type="button" class="btn btn--secondary" (click)="loadReservations()">
+			Refresh
+		</button>
+	</header>
+
+	@if (error()) {
+		<p class="reservation-list__error" role="alert">{{ error() }}</p>
+	}
+
+	@if (loading()) {
+		<p class="reservation-list__status">Loading reservations…</p>
+	} @else if (reservations().length === 0) {
+		<p class="reservation-list__status">No reservations found.</p>
+	} @else {
+		<div class="reservation-list__table-wrapper">
+			<table class="reservation-table">
+				<thead>
+					<tr>
+						<th scope="col">ID</th>
+						<th scope="col">Client</th>
+						<th scope="col">Date</th>
+						<th scope="col">Time</th>
+						<th scope="col">Service</th>
+						<th scope="col">Status</th>
+						<th scope="col">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@for (reservation of reservations(); track reservation.id) {
+						<tr>
+							<td>{{ reservation.id }}</td>
+							<td>{{ reservation.clientName }}</td>
+							<td>{{ reservation.date }}</td>
+							<td>{{ reservation.time }}</td>
+							<td>{{ reservation.service }}</td>
+							<td>
+								<span
+									class="status-badge"
+									[class.status-badge--active]="
+										reservation.status === ReservationStatus.ACTIVE
+									"
+									[class.status-badge--cancelled]="
+										reservation.status === ReservationStatus.CANCELLED
+									"
+								>
+									{{ reservation.status }}
+								</span>
+							</td>
+							<td>
+								<button
+									type="button"
+									class="btn btn--danger"
+									[disabled]="
+										!isCancellable(reservation) || cancellingId() === reservation.id
+									"
+									(click)="cancelReservation(reservation.id)"
+								>
+									@if (cancellingId() === reservation.id) {
+										Cancelling…
+									} @else {
+										Cancel
+									}
+								</button>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+</section>
